@@ -1,0 +1,100 @@
+# ==================== Root Queries ====================
+# Custom scalar for handling JSON
+scalar JSON
+
+type Query {
+    # Authentication Query
+    secureData: String!
+
+    # Group Queries
+    group(id: ID!): Group
+    groups: [Group!]!
+
+    # User-Group Queries
+    userGroups(userId: ID!): [Group!]!  # Get all groups a user is in
+    groupMembers(groupId: ID!): [UserGroup!]! # Get all members of a group
+}
+
+# ==================== Root Mutations ====================
+
+type Mutation {
+    # Authentication Mutations
+    register(input: RegisterInput!): AuthPayload!
+    login(username: String!, password: String!): AuthPayload!
+    refreshToken(refreshToken: String!): RefreshPayload!
+    logout(refreshToken: String!): LogoutResponse!
+
+    # Group Mutations
+    createGroup(input: CreateGroupInput!): Group!
+    updateGroupConfig(groupId: ID!, config: JSON): Group!
+
+    # User-Group Mutations
+    joinGroup(groupId: ID!): UserGroup!  # Current user joins a group
+    leaveGroup(groupId: ID!): Boolean!   # Current user leaves a group
+    updateUserGroupRole(groupId: ID!, userId: ID!, role: GroupRole!): UserGroup!
+}
+
+# ==================== Authentication Types ====================
+
+input RegisterInput {
+    username: String!
+    password: String!
+    email: String!
+}
+
+type AuthPayload {
+    accessToken: String!
+    refreshToken: String!
+}
+
+type RefreshPayload {
+    accessToken: String!
+}
+
+type LogoutResponse {
+    message: String!
+}
+
+# ==================== Group Types ====================
+
+type Group {
+    id: ID!
+    name: String!
+    displayName: String!
+    description: String
+    config: JSON  # JSON-based settings (nullable)
+    createdAt: String!
+    updatedAt: String!
+    members: [UserGroup!]!  # List of users in the group
+}
+
+input CreateGroupInput {
+    name: String!
+    displayName: String!
+    description: String
+    config: JSON
+}
+
+# ==================== User-Group Types ====================
+
+type UserGroup {
+    user: User!
+    group: Group!
+    role: GroupRole!
+    joinedAt: String!
+}
+
+enum GroupRole {
+    OWNER
+    ADMIN
+    MODERATOR
+    MEMBER
+}
+
+# ==================== User Type ====================
+
+type User {
+    id: ID!
+    username: String!
+    email: String!
+}

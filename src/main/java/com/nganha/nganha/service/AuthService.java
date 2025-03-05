@@ -64,7 +64,7 @@ public class AuthService {
             throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Invalid refresh token");
         }
 
-        User user = userService.loadUserById(token.getUserId());
+        User user = userService.getUserById(token.getUserId());
         if (user == null) {
             throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Invalid refresh token");
         }

@@ -10,6 +10,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -19,43 +20,51 @@ public class GroupService {
     private final UserGroupService userGroupService;
 
     @Transactional
-    public Group createGroup(CreateGroupDto dto, User creator) {
-        if (groupRepository.existsByName(dto.name())) {
+    public Group createGroup(Group group, User creator) {
+        if (groupRepository.existsByName(group.getName())) {
             throw new IllegalArgumentException("Group name is already taken.");
         }
 
-        // Ensure the name follows Reddit-style rules (redundant if already validated in DTO)
-        if (!dto.name().matches("^[a-z0-9_]+$")) {
+        if (!group.getName().matches("^[a-z0-9_]+$")) {
             throw new IllegalArgumentException("Group name can only contain lowercase letters, numbers, and underscores.");
         }
 
-        Group group = Group.builder()
-                .name(dto.name())
-                .displayName(dto.displayName())
-                .description(dto.description())
-                .config(dto.config()) // JSON string (optional)
-                .build();
-
         group = groupRepository.save(group);
 
-        // Assign the creator as the group owner
         userGroupService.addUserToGroup(creator, group, GroupRole.OWNER);
 
         return group;
     }
 
+    @Transactional(readOnly = true)
+    public Group getGroupById(Long id) {
+        return groupRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("Group not found"));
+    }
+
+    @Transactional(readOnly = true)
     public Group getGroupByName(String name) {
         return groupRepository.findByName(name)
                 .orElseThrow(() -> new IllegalArgumentException("Group not found"));
     }
 
+    @Transactional(readOnly = true)
     public boolean groupExists(String name) {
         return groupRepository.existsByName(name);
     }
 
-
     @Transactional(readOnly = true)
     public List<Group> getAllGroups() {
         return groupRepository.findAll();
+    }
+
+    @Transactional
+    public Group updateGroupConfig(Group group, Object config, User user) {
+        if (!userGroupService.hasRole(user, group, GroupRole.OWNER) && !userGroupService.hasRole(user, group, GroupRole.ADMIN)) {
+            throw new IllegalArgumentException("User is not an owner or admin of this group.");
+        }
+
+        group.setConfig(config);
+        return groupRepository.save(group);
     }
 }

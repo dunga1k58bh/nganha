@@ -1,5 +1,6 @@
 package com.nganha.nganha.resolver;
 
+import com.nganha.nganha.dto.auth.LoginDto;
 import com.nganha.nganha.dto.auth.RegisterDto;
 import com.nganha.nganha.entity.User;
 import com.nganha.nganha.security.CurrentUser;
@@ -25,8 +26,8 @@ public class AuthResolver {
 
     @MutationMapping
     @PreAuthorize("permitAll()")
-    public Map<String, String> login(@Argument String username, @Argument String password) {
-        return authService.login(username, password);
+    public Map<String, String> login(@Argument("input") LoginDto input) {
+        return authService.login(input.username(), input.password());
     }
 
     @MutationMapping

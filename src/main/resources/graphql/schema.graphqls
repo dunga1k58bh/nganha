@@ -1,7 +1,7 @@
-# ==================== Root Queries ====================
-# Custom scalar for handling JSON
+# ==================== Custom Scalars ====================
 scalar JSON
 
+# ==================== Root Queries ====================
 type Query {
     # Authentication Query
     secureData: String!
@@ -11,37 +11,204 @@ type Query {
     groups: [Group!]!
 
     # User-Group Queries
-    userGroups(userId: ID!): [Group!]!  # Get all groups a user is in
-    groupMembers(groupId: ID!): [UserGroup!]! # Get all members of a group
+    userGroups(userId: ID!): [Group!]!
+    groupMembers(groupId: ID!): [UserGroup!]!
+
+    # Post Queries
+    post(id: ID!): Post
+    posts(groupId: ID, authorId: ID, sort: PostSortType, limit: Int, offset: Int): [Post!]!
+
+    # Comment Queries
+    comment(id: ID!): Comment
+    comments(postId: ID!, sort: CommentSortType, limit: Int, offset: Int): [Comment!]!
 }
 
 # ==================== Root Mutations ====================
-
 type Mutation {
     # Authentication Mutations
     register(input: RegisterInput!): AuthPayload!
-    login(username: String!, password: String!): AuthPayload!
+    login(input: LoginInput!): AuthPayload!
     refreshToken(refreshToken: String!): RefreshPayload!
     logout(refreshToken: String!): LogoutResponse!
 
     # Group Mutations
     createGroup(input: CreateGroupInput!): Group!
-    updateGroupConfig(groupId: ID!, config: JSON): Group!
+    updateGroupConfig(input: UpdateGroupConfigInput!): Group!
 
     # User-Group Mutations
-    joinGroup(groupId: ID!): UserGroup!  # Current user joins a group
-    leaveGroup(groupId: ID!): Boolean!   # Current user leaves a group
-    updateUserGroupRole(groupId: ID!, userId: ID!, role: GroupRole!): UserGroup!
+    joinGroup(groupId: ID!): UserGroup!
+    leaveGroup(groupId: ID!): Boolean!
+    updateUserGroupRole(input: UpdateUserGroupRoleInput!): UserGroup!
+
+    # Post Mutations
+    createPost(input: CreatePostInput!): Post!
+    updatePost(input: UpdatePostInput!): Post!
+    deletePost(postId: ID!): Boolean!
+    votePost(input: VotePostInput!): Boolean!
+
+    # Comment Mutations
+    createComment(input: CreateCommentInput!): Comment!
+    updateComment(input: UpdateCommentInput!): Comment!
+    deleteComment(commentId: ID!): Boolean!
+    voteComment(input: VoteCommentInput!): Boolean!
 }
 
-# ==================== Authentication Types ====================
+# ==================== Post Schema ====================
+type Post {
+    id: ID!
+    author: User!
+    group: Group
+    title: String!
+    content: String
+    mediaUrls: [String!]
+    linkUrl: String
+    visibility: PostVisibility!
+    type: PostType!
+    votes: Int!
+    userVote: VoteType
+    commentCount: Int!
+    comments(sort: CommentSortType, limit: Int, offset: Int): [Comment!]!
+    isEdited: Boolean!
+    isPinned: Boolean!
+    isLocked: Boolean!
+    createdAt: String!
+    updatedAt: String!
+}
 
+enum PostType {
+    TEXT
+    IMAGE
+    VIDEO
+    LINK
+    POLL
+}
+
+enum PostVisibility {
+    PUBLIC
+    PRIVATE
+    GROUP_ONLY
+}
+
+enum PostSortType {
+    HOT
+    NEW
+    TOP
+}
+
+# ==================== Vote Schema ====================
+enum VoteType {
+    UPVOTE
+    DOWNVOTE
+}
+
+type ContentVote {
+    id: ID!
+    user: User!
+    post: Post
+    comment: Comment
+    type: VoteType!
+    createdAt: String!
+}
+
+# ==================== Comment Schema ====================
+type Comment {
+    id: ID!
+    post: Post!
+    parentComment: Comment
+    author: User!
+    content: String!
+    votes: Int!
+    userVote: VoteType
+    replyCount: Int!
+    replies(sort: CommentSortType, limit: Int, offset: Int): [Comment!]!
+    isEdited: Boolean!
+    createdAt: String!
+    updatedAt: String!
+}
+
+enum CommentSortType {
+    TOP
+    NEW
+    OLD
+}
+
+# ==================== Post Inputs ====================
+input CreatePostInput {
+    groupId: ID
+    title: String!
+    content: String
+    mediaUrls: [String!]
+    linkUrl: String
+    visibility: PostVisibility!
+    type: PostType!
+}
+
+input UpdatePostInput {
+    postId: ID!
+    title: String
+    content: String
+    mediaUrls: [String!]
+    linkUrl: String
+    visibility: PostVisibility
+    isPinned: Boolean
+    isLocked: Boolean
+}
+
+input VotePostInput {
+    postId: ID!
+    type: VoteType!
+}
+
+# ==================== Comment Inputs ====================
+input CreateCommentInput {
+    postId: ID!
+    parentCommentId: ID
+    content: String!
+}
+
+input UpdateCommentInput {
+    commentId: ID!
+    content: String!
+}
+
+input VoteCommentInput {
+    commentId: ID!
+    type: VoteType!
+}
+
+# ==================== Authentication Inputs ====================
 input RegisterInput {
     username: String!
     password: String!
     email: String!
 }
 
+input LoginInput {
+    username: String!
+    password: String!
+}
+
+# ==================== Group Inputs ====================
+input CreateGroupInput {
+    name: String!
+    displayName: String!
+    description: String
+    config: JSON
+}
+
+input UpdateGroupConfigInput {
+    groupId: ID!
+    config: JSON
+}
+
+# ==================== User-Group Inputs ====================
+input UpdateUserGroupRoleInput {
+    groupId: ID!
+    userId: ID!
+    role: GroupRole!
+}
+
+# ==================== Authentication Types ====================
 type AuthPayload {
     accessToken: String!
     refreshToken: String!
@@ -56,32 +223,24 @@ type LogoutResponse {
 }
 
 # ==================== Group Types ====================
-
 type Group {
     id: ID!
     name: String!
     displayName: String!
     description: String
-    config: JSON  # JSON-based settings (nullable)
+    config: JSON
     createdAt: String!
     updatedAt: String!
-    members: [UserGroup!]!  # List of users in the group
-}
-
-input CreateGroupInput {
-    name: String!
-    displayName: String!
-    description: String
-    config: JSON
+    members: [UserGroup!]!
 }
 
 # ==================== User-Group Types ====================
-
 type UserGroup {
     user: User!
     group: Group!
     role: GroupRole!
-    joinedAt: String!
+    createdAt: String!
+    updatedAt: String!
 }
 
 enum GroupRole {
@@ -92,7 +251,6 @@ enum GroupRole {
 }
 
 # ==================== User Type ====================
-
 type User {
     id: ID!
     username: String!

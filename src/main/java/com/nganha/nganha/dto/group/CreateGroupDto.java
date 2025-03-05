@@ -1,5 +1,6 @@
 package com.nganha.nganha.dto.group;
 
+import com.nganha.nganha.entity.Group;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
@@ -18,4 +19,13 @@ public record CreateGroupDto(
         String description,
 
         String config // JSON config (optional)
-) {}
+) {
+        public Group toEntity() {
+                return Group.builder()
+                        .name(this.name)
+                        .displayName(this.displayName)
+                        .description(this.description)
+                        .config(this.config)
+                        .build();
+        }
+}

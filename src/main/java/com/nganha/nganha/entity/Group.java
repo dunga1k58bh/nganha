@@ -1,5 +1,6 @@
 package com.nganha.nganha.entity;
 
+import com.nganha.nganha.utils.JsonConverter;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.ColumnTransformer;
@@ -33,7 +34,8 @@ public class Group extends BaseEntity {
     @OneToMany(mappedBy = "group", cascade = CascadeType.ALL, orphanRemoval = true)
     private Set<UserGroup> members = new HashSet<>();
 
-    @Lob  // Use CLOB for large JSON storage
+    @Lob
     @Column(name = "config", columnDefinition = "CLOB")
-    private String config;
+    @Convert(converter = JsonConverter.class) // Automatic JSON conversion
+    private Object config;
 }

@@ -19,9 +19,18 @@ public interface UserGroupRepository extends JpaRepository<UserGroup, UserGroupI
     // Find a user's membership in a group
     Optional<UserGroup> findByUserAndGroup(User user, Group group);
 
+    // Find a UserGroup by composite ID
+    Optional<UserGroup> findById(UserGroupId id);
+
     // Find all groups a user is a member of
     List<UserGroup> findByUser(User user);
 
     // Find all users in a group
     List<UserGroup> findByGroup(Group group);
+
+    // Find all UserGroup relationships for a given list of group IDs
+    List<UserGroup> findByGroupIdIn(List<Long> groupIds);
+
+    // Find all UserGroup relationships for a given list of user IDs
+    List<UserGroup> findByUserIdIn(List<Long> userIds);
 }

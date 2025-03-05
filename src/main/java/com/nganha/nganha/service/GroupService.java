@@ -1,6 +1,5 @@
 package com.nganha.nganha.service;
 
-import com.nganha.nganha.dto.group.CreateGroupDto;
 import com.nganha.nganha.entity.Group;
 import com.nganha.nganha.entity.User;
 import com.nganha.nganha.enums.GroupRole;
@@ -10,7 +9,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
-import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor

@@ -55,7 +55,7 @@ public class CommentResolver {
 
     @MutationMapping
     public Comment createComment(@Valid @Argument("input")CreateCommentDto input, @CurrentUser User user){
-        Post post = postService.getPostById(input.postId());
+        Post post = postService.getPostById(input.postId()).orElse(null);
         if (post == null){
             throw new IllegalArgumentException("Invalid post");
         }

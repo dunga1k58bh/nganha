@@ -1,15 +1,20 @@
 package com.nganha.nganha.service;
 
+import com.nganha.nganha.dto.post.PostDto;
 import com.nganha.nganha.entity.Group;
 import com.nganha.nganha.entity.Post;
 import com.nganha.nganha.entity.User;
+import com.nganha.nganha.enums.PostSortType;
+import com.nganha.nganha.enums.VoteType;
 import com.nganha.nganha.repository.PostRepository;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -23,17 +28,26 @@ public class PostService {
         return postRepository.findAll();
     }
 
-    public Post getPostById(Long id) {
-        return postRepository.findById(id).orElse(null);
+    public Optional<Post> getPostById(Long id) {
+        return postRepository.findById(id);
     }
 
-    public List<Post> getPostsByAuthor(Long authorId) {
-        return postRepository.findByAuthorId(authorId);
+    @Transactional(readOnly = true)
+    public List<PostDto> findPosts(Group group, User author, PostSortType sortType, User currentUser, Pageable pageable) {
+        Long groupId = (group != null) ? group.getId() : null;
+        Long authorId = (author != null) ? author.getId() : null;
+
+        List<Object[]> results = postRepository.findPosts(groupId, authorId, sortType.name(), currentUser.getId(), pageable);
+        return results.stream()
+                .map(result -> {
+                    Post post = (Post) result[0];
+                    VoteType userVote = (VoteType) result[1];
+
+                    return PostDto.fromEntity(post, userVote);
+                })
+                .toList();
     }
 
-    public List<Post> getPostsByGroup(Long groupId) {
-        return postRepository.findByGroupId(groupId);
-    }
 
     @Transactional
     public Post createPost(Post post) {

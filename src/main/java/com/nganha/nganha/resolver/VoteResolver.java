@@ -32,7 +32,9 @@ public class VoteResolver {
     @MutationMapping
     @Transactional
     public boolean votePost(@Valid @Argument("input") VotePostDto input, @CurrentUser User user) {
-        Post post = postService.getPostById(input.postId());
+        Post post = postService.getPostById(input.postId())
+                .orElseThrow(() -> new EntityNotFoundException("Comment not found with ID: " + input.postId()));
+
         voteService.votePost(post, user, input.type());
         return true;
     }

@@ -9,6 +9,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -35,9 +36,11 @@ public class GroupService {
     }
 
     @Transactional(readOnly = true)
-    public Group getGroupById(Long id) {
-        return groupRepository.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException("Group not found"));
+    public Optional<Group> getGroupById(Long id) {
+        if (id == null || id == 0) {
+            return Optional.empty(); // Return empty if id is null or 0
+        }
+        return groupRepository.findById(id);
     }
 
     @Transactional(readOnly = true)

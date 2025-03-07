@@ -29,21 +29,20 @@ public class UserGroupResolver {
 
     @MutationMapping
     public UserGroup joinGroup(@Argument Long groupId, @CurrentUser User user) {
-        Group group = groupService.getGroupById(groupId);
+        Group group = groupService.getGroupById(groupId).orElse(null);
         return userGroupService.joinGroup(group, user);
     }
 
     @MutationMapping
     public Boolean leaveGroup(@Argument Long groupId, @CurrentUser User user) {
-        Group group = groupService.getGroupById(groupId);
+        Group group = groupService.getGroupById(groupId).orElse(null);
         return userGroupService.leaveGroup(group, user);
     }
 
     @MutationMapping
     public UserGroup updateUserGroupRole(@Argument("input") UpdateUserGroupDto input, @CurrentUser User assigner) {
-        User assignee = userService.getUserById(input.userId());
-        Group group = groupService.getGroupById(input.groupId());
-
+        User assignee = userService.getUserById(input.userId()).orElse(null);
+        Group group = groupService.getGroupById(input.groupId()).orElse(null);
         return userGroupService.assignRole(assigner, assignee, group, input.role());
     }
 }

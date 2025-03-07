@@ -16,7 +16,7 @@ type Query {
 
     # Post Queries
     post(id: ID!): Post
-    posts(groupId: ID, authorId: ID, sort: PostSortType, limit: Int, offset: Int): [Post!]!
+    posts(input: PostQueryInput!): [Post!]!
 
     # Comment Queries
     comment(id: ID!): Comment
@@ -58,7 +58,7 @@ type Mutation {
 type Post {
     id: ID!
     author: User!
-    group: Group
+    groupId: ID
     title: String!
     content: String
     mediaUrls: [String!]
@@ -100,15 +100,6 @@ enum PostSortType {
 enum VoteType {
     UPVOTE
     DOWNVOTE
-}
-
-type ContentVote {
-    id: ID!
-    user: User!
-    post: Post
-    comment: Comment
-    type: VoteType!
-    createdAt: String!
 }
 
 # ==================== Comment Schema ====================
@@ -158,6 +149,14 @@ input UpdatePostInput {
 input VotePostInput {
     postId: ID!
     type: VoteType!
+}
+
+input PostQueryInput {
+    groupId: ID
+    authorId: ID
+    sort: PostSortType
+    limit: Int!
+    offset: Int!
 }
 
 # ==================== Comment Inputs ====================
@@ -238,7 +237,7 @@ type Group {
 # ==================== User-Group Types ====================
 type UserGroup {
     user: User!
-    group: Group!
+    groupId: ID!
     role: GroupRole!
     createdAt: String!
     updatedAt: String!

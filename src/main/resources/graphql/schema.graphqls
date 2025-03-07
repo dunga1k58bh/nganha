@@ -21,6 +21,7 @@ type Query {
     # Comment Queries
     comment(id: ID!): Comment
     comments(postId: ID!, sort: CommentSortType, limit: Int, offset: Int): [Comment!]!
+    getAllComments: [Comment!]! # Returns a list of comments for admin debugging
 }
 
 # ==================== Root Mutations ====================
@@ -113,8 +114,8 @@ type ContentVote {
 # ==================== Comment Schema ====================
 type Comment {
     id: ID!
-    post: Post!
-    parentComment: Comment
+    postId: ID!
+    parentCommentId: ID
     author: User!
     content: String!
     votes: Int!
@@ -254,5 +255,5 @@ enum GroupRole {
 type User {
     id: ID!
     username: String!
-    email: String!
+    imageUrl: String
 }

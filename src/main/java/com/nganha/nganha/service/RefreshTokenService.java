@@ -4,6 +4,7 @@ import com.nganha.nganha.entity.RefreshToken;
 import com.nganha.nganha.entity.User;
 import com.nganha.nganha.repository.RefreshTokenRepository;
 import jakarta.transaction.Transactional;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
@@ -12,6 +13,7 @@ import java.util.Optional;
 import java.util.UUID;
 
 @Service
+@RequiredArgsConstructor
 public class RefreshTokenService {
 
     private final RefreshTokenRepository refreshTokenRepository;
@@ -19,10 +21,6 @@ public class RefreshTokenService {
     @Value("${jwt.refreshExpiration}")
     private long refreshTokenExpiration; // Expiration for refresh token (e.g., 7 days)
 
-
-    public RefreshTokenService(RefreshTokenRepository refreshTokenRepository) {
-        this.refreshTokenRepository = refreshTokenRepository;
-    }
 
     // Generate and store refresh token
     public String createRefreshToken(User user) {

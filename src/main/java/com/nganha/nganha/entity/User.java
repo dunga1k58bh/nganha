@@ -32,6 +32,9 @@ public class User extends BaseEntity implements UserDetails {
     @Column(name = "email", unique = true)
     private String email;
 
+    @Column(name = "image_url")
+    private String imageUrl;
+
     @Enumerated(EnumType.STRING)
     @Column(name = "role")
     private Role role;

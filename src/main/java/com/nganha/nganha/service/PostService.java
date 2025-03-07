@@ -3,7 +3,6 @@ package com.nganha.nganha.service;
 import com.nganha.nganha.entity.Group;
 import com.nganha.nganha.entity.Post;
 import com.nganha.nganha.entity.User;
-import com.nganha.nganha.entity.UserGroup;
 import com.nganha.nganha.repository.PostRepository;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
@@ -19,9 +18,13 @@ public class PostService {
     private final PostRepository postRepository;
     private final UserGroupService userGroupService;
 
+    @Transactional(readOnly = true)
+    public List<Post> getAllPosts() {
+        return postRepository.findAll();
+    }
+
     public Post getPostById(Long id) {
-        return postRepository.findById(id)
-                .orElseThrow(() -> new EntityNotFoundException("Post not found with id: " + id));
+        return postRepository.findById(id).orElse(null);
     }
 
     public List<Post> getPostsByAuthor(Long authorId) {
@@ -33,13 +36,18 @@ public class PostService {
     }
 
     @Transactional
-    public Post createPost(Post post, Group group, User author) {
-        if (!userGroupService.isMember(author, group)){
+    public Post createPost(Post post) {
+        if (post.getAuthor() == null) {
+            throw new IllegalArgumentException("Author cannot be null.");
+        }
+
+        if (post.getGroup() != null && !userGroupService.isMember(post.getAuthor(), post.getGroup())) {
             throw new SecurityException("User is not a member of this group.");
         }
 
         return postRepository.save(post);
     }
+
 
     @Transactional
     public Post updatePost(Post post) {

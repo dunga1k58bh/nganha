@@ -35,8 +35,11 @@ public record CreateCommentDto(
     public Comment toEntity(Post post, User author, Comment parentComment) {
         return Comment.builder()
                 .post(post)
+                .postId(post.getId())
                 .author(author)
+                .authorId(author.getId())
                 .parentComment(parentComment)
+                .parentCommentId((parentComment != null) ? parentComment.getId() : null)
                 .content(content)
                 .build();
     }

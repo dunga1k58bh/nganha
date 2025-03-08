@@ -1,16 +1,19 @@
 package com.nganha.nganha.resolver;
 
 import com.nganha.nganha.dto.comment.CommentDto;
+import com.nganha.nganha.dto.comment.CommentQueryDto;
 import com.nganha.nganha.dto.comment.CreateCommentDto;
 import com.nganha.nganha.entity.Comment;
 import com.nganha.nganha.entity.Post;
 import com.nganha.nganha.entity.User;
+import com.nganha.nganha.enums.CommentSortType;
 import com.nganha.nganha.security.CurrentUser;
 import com.nganha.nganha.service.CommentService;
 import com.nganha.nganha.service.PostService;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Pageable;
 import org.springframework.graphql.data.method.annotation.Argument;
 import org.springframework.graphql.data.method.annotation.MutationMapping;
 import org.springframework.graphql.data.method.annotation.QueryMapping;
@@ -40,6 +43,18 @@ public class CommentResolver {
                 .toList();
     }
 
+
+    @QueryMapping
+    public List<CommentDto> comments(@Valid @Argument("input") CommentQueryDto query, @CurrentUser User user) {
+        Post post = postService.getPostById(query.postId()).orElse(null);
+        Pageable pageable = query.getPageable();
+        CommentSortType sortType = query.sort();
+
+        return commentService.findComments(post, sortType, user, pageable);
+    }
+
+
+
     /**
      * Fetch a single comment by its ID.
      * @param id the ID of the comment
@@ -54,15 +69,15 @@ public class CommentResolver {
 
 
     @MutationMapping
-    public Comment createComment(@Valid @Argument("input")CreateCommentDto input, @CurrentUser User user){
+    public CommentDto createComment(@Valid @Argument("input")CreateCommentDto input, @CurrentUser User user){
         Post post = postService.getPostById(input.postId()).orElse(null);
         if (post == null){
             throw new IllegalArgumentException("Invalid post");
         }
 
-        Comment parent = commentService.getCommentById(input.parentCommentId()).orElse(null);
+        Comment parent = (input.parentCommentId() != null) ? commentService.getCommentById(input.parentCommentId()).orElse(null) : null;
         Comment comment = input.toEntity(post, user, parent);
-        return commentService.createComment(comment);
+        return CommentDto.fromEntity(commentService.createComment(comment));
     }
 
     @MutationMapping

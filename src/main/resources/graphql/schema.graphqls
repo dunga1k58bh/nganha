@@ -20,7 +20,7 @@ type Query {
 
     # Comment Queries
     comment(id: ID!): Comment
-    comments(postId: ID!, sort: CommentSortType, limit: Int, offset: Int): [Comment!]!
+    comments(input: CommentQueryInput!): [Comment!]!
     getAllComments: [Comment!]! # Returns a list of comments for admin debugging
 }
 
@@ -175,6 +175,14 @@ input VoteCommentInput {
     commentId: ID!
     type: VoteType!
 }
+
+input CommentQueryInput {
+    postId: ID!
+    sort: CommentSortType
+    limit: Int!
+    offset: Int!
+}
+
 
 # ==================== Authentication Inputs ====================
 input RegisterInput {
